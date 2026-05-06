@@ -1,27 +1,34 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { api } from "./app/lib/api";
 
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
 
-  if (!token) {
-    return NextResponse.redirect(new URL("/", req.url));
+  // protected routes
+  const isProtected =
+    req.nextUrl.pathname.startsWith("/conversations");
+
+  // auth pages
+  const isAuthPage =
+    req.nextUrl.pathname === "/";
+
+  // not logged in
+  if (isProtected && !token) {
+    return NextResponse.redirect(
+      new URL("/", req.url),
+    );
   }
 
-  try {
-    const res = await api.get("/auth/me");
-
-    if (!res) {
-      throw new Error("Invalid");
-    }
-
-    return NextResponse.next();
-  } catch {
-    return NextResponse.redirect(new URL("/", req.url));
+  // already logged in
+  if (isAuthPage && token) {
+    return NextResponse.redirect(
+      new URL("/conversations", req.url),
+    );
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/conversations/:path*"],
+  matcher: ["/", "/conversations/:path*"],
 };

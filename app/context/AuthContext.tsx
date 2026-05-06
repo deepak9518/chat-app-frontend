@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { api } from '../lib/api';
-import { User } from '../types';
-
+import { createContext, useContext, useEffect, useState } from "react";
+import { api } from "../lib/api";
+import { User } from "../types";
+import { useRouter } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
@@ -24,10 +24,10 @@ export default function AuthContextProvider({
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const router = useRouter();
   const refreshUser = async () => {
     try {
-      const res = await api.get('/auth/me');
+      const res = await api.get("/auth/me");
       setUser(res.data);
     } catch {
       setUser(null);
@@ -39,7 +39,17 @@ export default function AuthContextProvider({
   useEffect(() => {
     refreshUser();
   }, []);
-
+  useEffect(() => {
+    api
+      .get("/auth/me")
+      .then((res) => {
+        setUser(res.data);
+      })
+      .catch(() => {
+        setUser(null);
+        router.push("/");
+      });
+  }, []);
   return (
     <AuthContext.Provider value={{ user, loading, refreshUser }}>
       {children}
