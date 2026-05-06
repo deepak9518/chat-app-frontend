@@ -1,10 +1,12 @@
-import { api } from "../lib/api";
+import { api } from "@/app/lib/api";
+import { Room } from "@/app/types";
 
-const getConversationById = async (conversationId: string) => {
+const getConversationById = async (conversationId: string): Promise<Room | null> => {
   try {
-    const res = await api.get(`/conversations/${conversationId}`);
+    const res = await api.get(`/rooms/${conversationId}`);
     return res.data;
-  } catch {
+  } catch (error) {
+    console.error('Failed to fetch conversation:', error);
     return null;
   }
 };

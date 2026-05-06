@@ -1,16 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
-import { CldUploadButton } from 'next-cloudinary';
-import toast from 'react-hot-toast';
-import Modal from '../Modal';
-import Input from '../input/Input';
-import Image from 'next/image';
-import Button from '../Button';
-import { User } from '@/app/types';
-import { api } from '@/app/lib/api';
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import Modal from "../Modal";
+import Input from "../input/Input";
+import Image from "next/image";
+import Button from "../Button";
+import { User } from "@/app/types";
+import { api } from "@/app/lib/api";
 
 interface SettingsModalProps {
   currentUser: User;
@@ -25,6 +24,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -34,46 +34,81 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     watch,
   } = useForm<FieldValues>({
     defaultValues: {
-      name: currentUser?.name,
-      image: currentUser?.image,
+      name: currentUser?.name || "",
+      image: currentUser?.avatar || "",
     },
   });
 
-  const image = watch('image');
+  const image = watch("image");
 
-  const handleUpload = (result: any) => {
-    setValue('image', result?.info?.secure_url, {
-      shouldValidate: true,
-    });
+  const openFile = () => {
+    fileRef.current?.click();
   };
 
-  const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    setIsLoading(true);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    api
-      .post('/api/profile', data)
-      .then(() => {
-        router.refresh();
-        onClose();
-      })
-      .catch(() => toast.error('Something went wrong!'))
-      .finally(() => setIsLoading(false));
+    try {
+      setIsLoading(true);
+
+      const formData = new FormData();
+
+      formData.append("files", file);
+
+      const res = await api.post("/files/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const uploaded = res.data?.urls?.[0];
+
+      if (!uploaded?.url) {
+        throw new Error("Upload failed");
+      }
+
+      setValue("image", uploaded.url, {
+        shouldValidate: true,
+      });
+
+      toast.success("Image uploaded!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Upload failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+    try {
+      setIsLoading(true);
+
+      await api.patch("/users/profile", data);
+
+      toast.success("Profile updated");
+      router.refresh();
+      onClose();
+    } catch {
+      toast.error("Something went wrong!");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="space-y-12">
-          <div className="border-b border-gray-900/10 pb-12">
-            <h2 className="text-base font-semibold leading-7 text-gray-900">
-              Profile
-            </h2>
+        <div className="space-y-10">
+          <div className="border-b pb-8">
+            <h2 className="text-lg font-semibold text-gray-900">Profile</h2>
 
-            <p className="mt-1 text-sm leading-6 text-gray-600">
-              Edit your profile details.
+            <p className="mt-1 text-sm text-gray-500">
+              Update your profile details
             </p>
 
-            <div className="mt-10 flex flex-col gap-y-8">
+            <div className="mt-8 flex flex-col gap-6">
               <Input
                 disabled={isLoading}
                 label="Name"
@@ -83,33 +118,41 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 required
               />
 
+              {/* 🔥 Upload Section */}
               <div>
-                <label className="block text-sm font-medium leading-6 text-gray-900">
+                <label className="block text-sm font-medium text-gray-900">
                   Photo
                 </label>
-                <div className="mt-2 flex items-center gap-x-3">
+
+                <div className="mt-3 flex items-center gap-4">
                   <Image
-                    width={48}
-                    height={48}
-                    src={image || currentUser?.image || '/images/avatar.jpg'}
+                    width={56}
+                    height={56}
+                    src={image || "/images/avatar.jpg"}
                     alt="avatar"
-                    className="rounded-full"
+                    className="rounded-full object-cover"
                   />
-                  <CldUploadButton
-                    options={{ maxFiles: 1 }}
-                    onUpload={handleUpload}
-                    uploadPreset="jkyytcex"
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    secondary
+                    disabled={isLoading}
+                    onClick={() => fileRef.current?.click()}
                   >
-                    <Button disabled={isLoading} type="button" secondary>
-                      Change
-                    </Button>
-                  </CldUploadButton>
+                    {isLoading ? "Uploading..." : "Change"}
+                  </Button>{" "}
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-end gap-x-6">
+          <div className="flex justify-end gap-4">
             <Button disabled={isLoading} onClick={onClose} secondary>
               Cancel
             </Button>

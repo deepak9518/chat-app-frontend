@@ -42,14 +42,17 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
 
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setIsLoading(true);
-
     api
-      .post('/api/conversations', { ...data, isGroup: true })
-      .then(() => {
+      .post('/rooms', {
+        name: data.name,
+        type: 'group',
+        members: data.members.map((m: any) => m.value),
+      })
+      .then((res) => {
         router.refresh();
         onClose();
         toast.success('Group chat created!');
-        router.push(`/conversations`);
+        router.push(`/conversations/${res.data._id}`);
       })
       .catch((err) => toast.error(err.message || 'Something went wrong!'))
       .finally(() => setIsLoading(false));
@@ -63,11 +66,9 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
             <h2 className="text-base font-semibold leading-7 text-gray-900">
               Create a group chat
             </h2>
-
             <p className="mt-1 text-sm leading-6 text-gray-600">
               Create a group chat to chat with multiple people at once.
             </p>
-
             <div className="mt-10 flex flex-col gap-y-8">
               <Input
                 label="Group name"
@@ -82,7 +83,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
                 label="Members"
                 options={users.map((user) => ({
                   label: user.name,
-                  value: user.id,
+                  value: user._id,
                 }))}
                 onChange={(value) =>
                   setValue('members', value, { shouldValidate: true })
@@ -92,14 +93,8 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
             </div>
           </div>
         </div>
-
         <div className="mt-6 flex items-center justify-end gap-x-6">
-          <Button
-            disabled={isLoading}
-            onClick={onClose}
-            type="button"
-            secondary
-          >
+          <Button disabled={isLoading} onClick={onClose} type="button" secondary>
             Cancel
           </Button>
           <Button disabled={isLoading} type="submit">
@@ -110,5 +105,4 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
     </Modal>
   );
 };
-
 export default GroupChatModal;

@@ -1,52 +1,38 @@
-// ===== Base =====
 export type ObjectId = string;
 
-// ===== User =====
 export interface User {
   _id: ObjectId;
   name: string;
   email: string;
-
-  about?: string;
-  birthday?: Date;
-  height?: number;
-  weight?: number;
-
+ 
+  online?: boolean;
+  lastSeen?: Date;
+  avatar?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-// ===== Room (after toJSON transform) =====
 export interface Room {
   _id: ObjectId;
   name: string;
-  type: 'PERSONAL' | 'GROUP';
-
-  // ⚠️ IMPORTANT: populated via autopopulate + transform
+  type: 'personal' | 'group';
   members: User[];
-
   createdAt: Date;
   updatedAt: Date;
+  unreadCount?: number;
+  lastMessage?: { content: string; createdAt: Date } | null;
 }
 
-// ===== Message =====
-export interface Message {
+export interface Chat {
   _id: ObjectId;
   content: string;
-
   room_id: ObjectId;
-
-  // ⚠️ autopopulated
   sender_id: User;
-
+  attachments?: { url: string; type: string; name: string }[];
+  readBy: ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-// ===== UI TYPES =====
-
-export type FullMessageType = Message;
-
-export type FullRoomType = Room & {
-  messages: Message[];
-};
+export type FullRoomType = Room & { messages?: Chat[] };
+export type FullMessageType = Chat;

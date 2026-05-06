@@ -1,11 +1,11 @@
 import Sidebar from '../components/sidebar/Sidebar';
 import ConversationList from './components/ConversationList';
-import getConversations from '../actions/getConversations';
-import getUsers from '../actions/getUsers';
 import { Metadata } from 'next';
+import getRooms from '../actions/getRooms';
+import getUsers from '../actions/getUsers';
 
 export const metadata: Metadata = {
-  title: 'My Conversations | Nexus - Your Ultimate Chat Experience',
+  title: 'My Conversations | ChatFlow - Your Ultimate Chat Experience',
 };
 
 export default async function ConversationsLayout({
@@ -13,15 +13,13 @@ export default async function ConversationsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const conversations = await getConversations();
+  const rooms = await getRooms();
   const users = await getUsers();
 
   return (
-    <Sidebar>
-      <div className="h-full">
-        <ConversationList users={users} initialConversations={conversations} />
+      <main className="h-full flex justify-between start">
+        <ConversationList initialRooms={rooms} users={users} />
         {children}
-      </div>
-    </Sidebar>
+      </main>
   );
 }

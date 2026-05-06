@@ -1,10 +1,12 @@
-import { api } from "../lib/api";
+import { api } from "@/app/lib/api";
+import { User } from "@/app/types";
 
-const getUsers = async () => {
+const getUsers = async (): Promise<User[]> => {
   try {
-    const res = await api.get('/users');
+    const res = await api.get('/users/list');
     return res.data;
-  } catch {
+  } catch (error) {
+    console.error('Failed to fetch users:', error);
     return [];
   }
 };

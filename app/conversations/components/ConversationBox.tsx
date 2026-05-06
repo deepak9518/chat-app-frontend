@@ -1,17 +1,16 @@
 'use client';
-
 import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import clsx from 'clsx';
-import { FullConversationType } from '@/app/types';
+import { Room } from '@/app/types';
 import useOtherUser from '@/app/hooks/useOtherUser';
 import Avatar from '@/app/components/Avatar';
 import AvatarGroup from '@/app/components/AvatarGroup';
 import { useAuth } from '@/app/context/AuthContext';
 
 interface ConversationBoxProps {
-  conversation: FullConversationType;
+  conversation: Room;
   selected: boolean;
 }
 
@@ -24,26 +23,18 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({
   const router = useRouter();
 
   const handleClick = useCallback(() => {
-    router.push(`/conversations/${conversation.id}`);
-  }, [conversation.id, router]);
+    router.push(`/conversations/${conversation._id}`);
+  }, [conversation._id, router]);
 
-  const lastMessage = useMemo(() => {
-    return conversation.messages?.[conversation.messages.length - 1];
-  }, [conversation.messages]);
-
-  const hasSeen = useMemo(() => {
-    if (!lastMessage || !user) return false;
-
-    return lastMessage.seen?.some(
-      (u) => u.id === user._id
-    );
-  }, [lastMessage, user]);
+  const lastMessage = conversation.lastMessage;
+  const unreadCount = conversation.unreadCount || 0;
 
   const lastMessageText = useMemo(() => {
-    if (lastMessage?.image) return 'Sent an image';
-    if (lastMessage?.body) return lastMessage.body;
-    return 'Started a chat...';
+    if (!lastMessage) return 'No messages yet';
+    return lastMessage.content || 'Media message';
   }, [lastMessage]);
+
+  const hasSeen = false;
 
   return (
     <div
@@ -53,8 +44,8 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({
         selected ? 'bg-neutral-100' : 'bg-white'
       )}
     >
-      {conversation.isGroup ? (
-        <AvatarGroup users={conversation.users} />
+      {conversation.type === 'group' ? (
+        <AvatarGroup users={conversation.members} />
       ) : (
         <Avatar user={otherUser!} />
       )}
@@ -64,25 +55,22 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({
           <p className="font-medium truncate">
             {conversation.name || otherUser?.name}
           </p>
-
           {lastMessage?.createdAt && (
             <span className="text-xs text-gray-400">
               {format(new Date(lastMessage.createdAt), 'p')}
             </span>
           )}
         </div>
-
-        <p
-          className={clsx(
-            'text-sm truncate',
-            hasSeen ? 'text-gray-500' : 'font-semibold text-black'
-          )}
-        >
+        <p className="text-sm truncate text-gray-500">
           {lastMessageText}
         </p>
       </div>
+      {unreadCount > 0 && (
+        <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1">
+          {unreadCount}
+        </span>
+      )}
     </div>
   );
 };
-
 export default ConversationBox;

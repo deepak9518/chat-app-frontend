@@ -9,14 +9,12 @@ import { IoClose, IoTrash } from 'react-icons/io5';
 import ConfirmModal from './ConfirmModal';
 import AvatarGroup from '@/app/components/AvatarGroup';
 import useActiveList from '@/app/hooks/useActiveList';
-import { Conversation, User } from '@/app/types';
+import { Room, User } from '@/app/types';
 
 interface ProfileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  data: Conversation & {
-    users: User[];
-  };
+  data: Room;   // Room instead of FullMessageType
 }
 
 const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
@@ -26,27 +24,28 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
 }) => {
   const otherUser = useOtherUser(data);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-
   const { members } = useActiveList();
-  const isActive = members.indexOf(otherUser?.email) !== -1;
+  const isActive = members.indexOf(otherUser?._id || "") !== -1;
 
-  const joinedDate = useMemo(() => {
+const joinedDate = useMemo(() => {
+  if (!data?.createdAt) return 'Unknown date';
+  try {
     return format(new Date(data.createdAt), 'PP');
-  }, [data.createdAt]);
-
+  } catch {
+    return 'Invalid date';
+  }
+}, [data.createdAt]);
   const title = useMemo(() => {
-    if (data.isGroup) {
+    if (data.type === 'group') {
       return data.name;
     }
-
     return otherUser?.name || otherUser?.email;
-  }, [data.isGroup, data.name, otherUser?.email, otherUser?.name]);
+  }, [data, otherUser]);
 
   const statusText = useMemo(() => {
-    if (data.isGroup) {
-      return `${data.users.length} members`;
+    if (data.type === 'group') {
+      return `${data.members.length} members`;
     }
-
     return isActive ? 'Active' : 'Offline';
   }, [data, isActive]);
 
@@ -101,18 +100,15 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                       <div className="relative mt-6 flex-1 px-4 sm:px-6">
                         <div className="flex flex-col items-center">
                           <div className="mb-2">
-                            {data.isGroup ? (
-                              <AvatarGroup users={data.users} />
+                            {data.type === 'group' ? (
+                              <AvatarGroup users={data.members} />
                             ) : (
-                              <Avatar user={otherUser} />
+                              <Avatar user={otherUser!} />
                             )}
                           </div>
 
                           <div>{title}</div>
-
-                          <div className="text-sm text-gray-500">
-                            {statusText}
-                          </div>
+                          <div className="text-sm text-gray-500">{statusText}</div>
 
                           <div className="flex gap-10 my-8">
                             <div
@@ -131,14 +127,14 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
 
                           <div className="w-full pb-5 pt-5 sm:px-0 sm:pt-0">
                             <dl className="space-y-8 px-4 sm:space-y-6 sm:px-6">
-                              {data.isGroup ? (
+                              {data.type === 'group' ? (
                                 <div>
                                   <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
                                     Members
                                   </dt>
                                   <dd className="mt-1 font-medium text-sm text-gray-900 sm:col-span-2">
-                                    {data.users
-                                      .map((user) => user.name || user.email)
+                                    {data.members
+                                      .map((user: User) => user.name || user.email)
                                       .join(', ')}
                                   </dd>
                                 </div>
@@ -153,35 +149,15 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
                                 </div>
                               )}
 
-                              {data.isGroup ? (
-                                <>
-                                  <hr />
-                                  <div>
-                                    <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
-                                      Created
-                                    </dt>
-                                    <dd className="mt-1 font-medium text-sm text-gray-900 sm:col-span-2">
-                                      <time dateTime={joinedDate}>
-                                        {joinedDate}
-                                      </time>
-                                    </dd>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <hr />
-                                  <div>
-                                    <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
-                                      Joined
-                                    </dt>
-                                    <dd className="mt-1 font-medium text-sm text-gray-900 sm:col-span-2">
-                                      <time dateTime={joinedDate}>
-                                        {joinedDate}
-                                      </time>
-                                    </dd>
-                                  </div>
-                                </>
-                              )}
+                              <hr />
+                              <div>
+                                <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
+                                  {data.type === 'group' ? 'Created' : 'Joined'}
+                                </dt>
+                                <dd className="mt-1 font-medium text-sm text-gray-900 sm:col-span-2">
+                                  <time dateTime={joinedDate}>{joinedDate}</time>
+                                </dd>
+                              </div>
                             </dl>
                           </div>
                         </div>

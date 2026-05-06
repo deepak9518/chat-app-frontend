@@ -1,7 +1,6 @@
 ## Pages
 
 - `app/(site)/page.tsx` - Register/Login page
-- `app/users/page.tsx` - Users page
 - `app/conversations/page.tsx` - Conversations page
 - `app/conversations/[id]/page.tsx` - Single Conversation page
 
@@ -47,8 +46,8 @@
   - [x] find twitter client id and secret
   - [x] add twitter to images domains in next config
 - [x] Watch the project intro again to see any missing features
-- [x] Change app name to Nexus
-- [x] Add a favicon & logo for Nexus
+- [x] Change app name to ChatFlow
+- [x] Add a favicon & logo for ChatFlow
 - [x] Add green deekayy branding
 - [x] Add logo to social login platforms
 - [x] Add github url to get started btn
@@ -67,4 +66,4 @@
 
 ## Short Description
 
-The Nexus Chat Application is a modern chat platform powered by Next.js, TypeScript, Tailwind CSS, MongoDB, Prisma, NextAuth, and more. It features real-time chatting, group creation, profile customization, online status tracking, and image uploads. The implementation of various authentication methods, including email and OAuth with Github, Google, and Twitter, enhances user accessibility.
+The ChatFlow Chat Application is a modern chat platform powered by Next.js, TypeScript, Tailwind CSS, MongoDB, Prisma, NextAuth, and more. It features real-time chatting, group creation, profile customization, online status tracking, and image uploads. The implementation of various authentication methods, including email and OAuth with Github, Google, and Twitter, enhances user accessibility.

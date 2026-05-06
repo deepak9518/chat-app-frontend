@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import Button from '@/app/components/Button';
-import Input from '@/app/components/input/Input';
-import { useState, useCallback } from 'react';
-import { useForm, FieldValues, SubmitHandler } from 'react-hook-form';
-import AuthSocialButton from './AuthSocialButton';
-import { BsGithub, BsGoogle, BsTwitter } from 'react-icons/bs';
-import { toast } from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/app/context/AuthContext';
-import { api } from '@/app/lib/api';
+import Button from "@/app/components/Button";
+import Input from "@/app/components/input/Input";
+import { useState, useCallback } from "react";
+import { useForm, FieldValues, SubmitHandler } from "react-hook-form";
+import AuthSocialButton from "./AuthSocialButton";
+import { BsGithub, BsGoogle, BsTwitter } from "react-icons/bs";
+import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
+import { api } from "@/app/lib/api";
 
-type Variant = 'LOGIN' | 'REGISTER';
+type Variant = "LOGIN" | "REGISTER";
 
 const AuthForm = () => {
   const router = useRouter();
   const { refreshUser } = useAuth();
 
-  const [variant, setVariant] = useState<Variant>('LOGIN');
+  const [variant, setVariant] = useState<Variant>("LOGIN");
   const [isLoading, setIsLoading] = useState(false);
 
   const toggleVariant = useCallback(() => {
-    setVariant((prev) => (prev === 'LOGIN' ? 'REGISTER' : 'LOGIN'));
+    setVariant((prev) => (prev === "LOGIN" ? "REGISTER" : "LOGIN"));
   }, []);
 
   const {
@@ -29,38 +29,38 @@ const AuthForm = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<FieldValues>({
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { name: "", email: "", password: "" },
   });
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     setIsLoading(true);
 
     try {
-      if (variant === 'REGISTER') {
-        await api.post('/auth/register', data);
+      if (variant === "REGISTER") {
+        await api.post("/auth/register", data);
 
-        toast.success('Account created!');
+        toast.success("Account created!");
       }
 
-      if (variant === 'LOGIN') {
-        await api.post('/auth/login', data);
+      if (variant === "LOGIN") {
+        await api.post("/auth/login", data);
 
-        toast.success('Logged in!');
+        toast.success("Logged in!");
       }
 
-      await refreshUser(); // 🔥 sync user from cookie
-      router.push('/users');
+      await refreshUser();
+      router.push("/conversations");
     } catch (err: any) {
       const errorCode = err?.response?.status;
 
       if (errorCode === 400) {
-        toast.error('Invalid input!');
+        toast.error("Invalid input!");
       } else if (errorCode === 401) {
-        toast.error('Invalid credentials!');
+        toast.error("Invalid credentials!");
       } else if (errorCode === 409) {
-        toast.error('Email already exists!');
+        toast.error("Email already exists!");
       } else {
-        toast.error('Something went wrong!');
+        toast.error("Something went wrong!");
       }
     } finally {
       setIsLoading(false);
@@ -71,7 +71,7 @@ const AuthForm = () => {
     <section className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
         <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          {variant === 'REGISTER' && (
+          {variant === "REGISTER" && (
             <Input
               id="name"
               label="Name"
@@ -100,29 +100,20 @@ const AuthForm = () => {
           />
 
           <Button disabled={isLoading} type="submit" fullWidth>
-            {variant === 'REGISTER' ? 'Sign up' : 'Sign in'}
+            {variant === "REGISTER" ? "Sign up" : "Sign in"}
           </Button>
         </form>
 
-        {/* Social (disabled for now) */}
-        <div className="mt-6 flex gap-2">
-          <AuthSocialButton icon={BsGithub} onClick={() => {}} />
-          <AuthSocialButton icon={BsGoogle} onClick={() => {}} />
-          <AuthSocialButton icon={BsTwitter} onClick={() => {}} />
-        </div>
-
         <div className="flex gap-2 justify-center text-sm mt-6 px-2 text-gray-500">
           <span>
-            {variant === 'REGISTER'
-              ? 'Already have an account?'
-              : 'New here?'}
+            {variant === "REGISTER" ? "Already have an account?" : "New here?"}
           </span>
           <button
             type="button"
             onClick={toggleVariant}
             className="underline text-blue-500"
           >
-            {variant === 'REGISTER' ? 'Sign in' : 'Sign up'}
+            {variant === "REGISTER" ? "Sign in" : "Sign up"}
           </button>
         </div>
       </div>

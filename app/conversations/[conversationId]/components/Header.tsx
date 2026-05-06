@@ -9,26 +9,22 @@ import { HiEllipsisHorizontal } from 'react-icons/hi2';
 import ProfileDrawer from './ProfileDrawer';
 import AvatarGroup from '@/app/components/AvatarGroup';
 import useActiveList from '@/app/hooks/useActiveList';
-import { Conversation, User } from '@/app/types';
+import { Room, User } from '@/app/types';
 
 interface HeaderProps {
-  conversation: Conversation & {
-    users: User[];
-  };
+  conversation: Room;
 }
 
 const Header: React.FC<HeaderProps> = ({ conversation }) => {
   const otherUser = useOtherUser(conversation);
   const [drawerOpen, setDrawerOpen] = useState(false);
-
   const { members } = useActiveList();
-  const isActive = members.indexOf(otherUser?.email) !== -1;
+  const isActive = members.indexOf(otherUser?._id || "") !== -1;
 
   const statusText = useMemo(() => {
-    if (conversation.isGroup) {
-      return `${conversation.users.length} members`;
+    if (conversation.type === 'group') {
+      return `${conversation.members.length} members`;
     }
-
     return isActive ? 'Active' : 'Offline';
   }, [conversation, isActive]);
 
@@ -48,10 +44,10 @@ const Header: React.FC<HeaderProps> = ({ conversation }) => {
             <HiChevronLeft size={32} />
           </Link>
 
-          {conversation.isGroup ? (
-            <AvatarGroup users={conversation.users} />
+          {conversation.type === 'group' ? (
+            <AvatarGroup users={conversation.members} />
           ) : (
-            <Avatar user={otherUser} />
+            <Avatar user={otherUser!} />
           )}
 
           <div className="flex flex-col">

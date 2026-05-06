@@ -1,27 +1,31 @@
-import { useEffect } from 'react';
-import useActiveList from './useActiveList';
-import { useAuth } from '../context/AuthContext';
-import { getSocket } from '../lib/socket';
+import { useEffect } from "react";
+import useActiveList from "./useActiveList";
+import { useAuth } from "../context/AuthContext";
+import { getSocket } from "../lib/socket";
 
 const useActiveChannel = () => {
-  const { set } = useActiveList();
+  const { add, remove } = useActiveList();
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user?.userId) return;
+    if (!user?._id) return;
 
     const socket = getSocket();
 
-    socket.emit('online', user.userId);
+    const handlePresenceUpdate = ({ userId, online }: { userId: string; online: boolean }) => {
+      if (online) {
+        add(userId);
+      } else {
+        remove(userId);
+      }
+    };
 
-    socket.on('users:active', (users: string[]) => {
-      set(users);
-    });
+    socket.on("presenceUpdate", handlePresenceUpdate);
 
     return () => {
-      socket.off('users:active');
+      socket.off("presenceUpdate", handlePresenceUpdate);
     };
-  }, [user?.userId]);
+  }, [user?._id, add, remove]);
 };
 
 export default useActiveChannel;

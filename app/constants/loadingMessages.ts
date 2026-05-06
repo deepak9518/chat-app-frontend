@@ -1,4 +1,3 @@
-// array of funny loading messages
 export default [
   'A long time ago in a server far, far away...',
   'Hacking the mainframe like a true Mr. Robot...',

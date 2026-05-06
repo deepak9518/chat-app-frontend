@@ -1,17 +1,15 @@
 import { useMemo } from 'react';
-import { FullConversationType, User } from '../types';
+import { Room, User } from '../types';
 import { useAuth } from '../context/AuthContext';
 
-const useOtherUser = (
-  conversation: FullConversationType | { users: User[] }
-) => {
+const useOtherUser = (room: Room | { users: User[]; members?: User[] }) => {
   const { user } = useAuth();
+  const members = 'members' in room ? room.members : room.users;
 
   const otherUser = useMemo(() => {
     if (!user) return null;
-
-    return conversation.users.find((u) => u.id !== user.userId);
-  }, [user, conversation.users]);
+    return members!.find((u: User) => u._id !== user._id);
+  }, [user, members]);
 
   return otherUser;
 };
