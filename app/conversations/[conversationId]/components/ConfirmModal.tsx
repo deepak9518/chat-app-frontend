@@ -2,13 +2,13 @@
 
 import Modal from '@/app/components/Modal';
 import useConversation from '@/app/hooks/useConversation';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { FiAlertTriangle } from 'react-icons/fi';
 import { Dialog } from '@headlessui/react';
 import Button from '@/app/components/Button';
+import { api } from '@/app/lib/api';
 
 interface ConfirmModalProps {
   isOpen?: boolean;
@@ -24,7 +24,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose }) => {
   const onDelete = useCallback(() => {
     setIsLoading(true);
 
-    axios
+    api
       .delete(`/api/conversations/${conversationId}`)
       .then(() => {
         onClose();

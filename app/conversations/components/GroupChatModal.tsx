@@ -3,13 +3,13 @@
 import Modal from '@/app/components/Modal';
 import Input from '@/app/components/input/Input';
 import Select from '@/app/components/input/Select';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import Button from '@/app/components/Button';
 import { User } from '@/app/types';
+import { api } from '@/app/lib/api';
 
 interface GroupChatModalProps {
   isOpen?: boolean;
@@ -43,7 +43,7 @@ const GroupChatModal: React.FC<GroupChatModalProps> = ({
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setIsLoading(true);
 
-    axios
+    api
       .post('/api/conversations', { ...data, isGroup: true })
       .then(() => {
         router.refresh();

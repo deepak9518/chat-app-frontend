@@ -2,8 +2,8 @@
 
 import Avatar from '@/app/components/Avatar';
 import LoadingModal from '@/app/components/LoadingModal';
+import { api } from '@/app/lib/api';
 import { User } from '@/app/types';
-import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
@@ -18,7 +18,7 @@ const UserBox: React.FC<UserBoxProps> = ({ user }) => {
   const handleClick = useCallback(() => {
     setIsLoading(true);
 
-    axios
+    api
       .post('/api/conversations', {
         userId: user.id,
       })

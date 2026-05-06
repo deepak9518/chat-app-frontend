@@ -1,11 +1,16 @@
-import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth({
-  pages: {
-    signIn: '/', // Display sign in page as a normal page
-  },
-});
+export function middleware(req: NextRequest) {
+  const token = req.cookies.get('token');
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/', req.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ['/users/:path*', '/conversations/:path*'], // pages that should be protected
+  matcher: ['/users/:path*', '/conversations/:path*'],
 };

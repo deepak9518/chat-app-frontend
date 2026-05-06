@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import clsx from 'clsx';
-import { MdOutlineGroupAdd } from 'react-icons/md';
-import { FullConversationType, User } from '@/app/types';
-import useConversation from '@/app/hooks/useConversation';
-import ConversationBox from './ConversationBox';
-import GroupChatModal from './GroupChatModal';
-import { useSession } from 'next-auth/react';
-import { find } from 'lodash';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import clsx from "clsx";
+import { MdOutlineGroupAdd } from "react-icons/md";
+import { FullConversationType, User } from "@/app/types";
+import useConversation from "@/app/hooks/useConversation";
+import ConversationBox from "./ConversationBox";
+import GroupChatModal from "./GroupChatModal";
+import { useAuth } from "@/app/context/AuthContext";
+import { getSocket } from "@/app/lib/socket";
 
 interface ConversationListProps {
   initialConversations: FullConversationType[];
@@ -20,64 +20,50 @@ const ConversationList: React.FC<ConversationListProps> = ({
   initialConversations,
   users,
 }) => {
-  const session = useSession();
+  const { user } = useAuth();
   const [conversations, setConversations] = useState(initialConversations);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const router = useRouter();
 
   const { conversationId, isOpen } = useConversation();
 
-  const pusherKey = useMemo(() => {
-    return session.data?.user?.email;
-  }, [session.data?.user?.email]);
+  useEffect(() => {
+    if (!user?.userId) return;
 
-  // useEffect(() => {
-  //   if (!pusherKey) return;
+    const socket = getSocket();
 
-  //   pusherClient.subscribe(pusherKey);
+    socket.emit("join-user", user.userId);
 
-  //   const newHandler = (conversation: FullConversationType) => {
-  //     setConversations((prevConversations) => {
-  //       if (find(prevConversations, { id: conversation.id }))
-  //         return prevConversations;
-  //       return [conversation, ...prevConversations];
-  //     });
-  //   };
+    const newHandler = (conversation: FullConversationType) => {
+      setConversations((prev) => {
+        if (prev.find((c) => c.id === conversation.id)) return prev;
+        return [conversation, ...prev];
+      });
+    };
 
-  //   const updateHandler = (conversation: FullConversationType) => {
-  //     setConversations((prevConversations) =>
-  //       prevConversations.map((c) => {
-  //         if (c.id === conversation.id) {
-  //           return { ...c, messages: conversation.messages };
-  //         }
+    const updateHandler = (conversation: FullConversationType) => {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === conversation.id
+            ? { ...c, messages: conversation.messages }
+            : c,
+        ),
+      );
+    };
 
-  //         return c;
-  //       })
-  //     );
-  //   };
+    const deleteHandler = (conversationId: string) => {
+      setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+    };
 
-  //   const deleteHandler = (conversation: FullConversationType) => {
-  //     setConversations((prevConversations) =>
-  //       prevConversations.filter((c) => c.id !== conversation.id)
-  //     );
+    socket.on("conversation:new", newHandler);
+    socket.on("conversation:update", updateHandler);
+    socket.on("conversation:delete", deleteHandler);
 
-  //     if (conversationId === conversation.id) {
-  //       router.push('/conversations');
-  //     }
-  //   };
-
-  //   pusherClient.bind('conversation:new', newHandler);
-  //   pusherClient.bind('conversation:update', updateHandler);
-  //   pusherClient.bind('conversation:delete', deleteHandler);
-
-  //   return () => {
-  //     pusherClient.unsubscribe(pusherKey);
-  //     pusherClient.unbind('conversation:new', newHandler);
-  //     pusherClient.unbind('conversation:update', updateHandler);
-  //     pusherClient.unbind('conversation:delete', deleteHandler);
-  //   };
-  // }, [pusherKey, conversationId, router]);
-
+    return () => {
+      socket.off("conversation:new", newHandler);
+      socket.off("conversation:update", updateHandler);
+      socket.off("conversation:delete", deleteHandler);
+    };
+  }, [user?.userId]);
   return (
     <>
       <GroupChatModal
@@ -87,8 +73,8 @@ const ConversationList: React.FC<ConversationListProps> = ({
       />
       <aside
         className={clsx(
-          'fixed inset-y-0 pb-20 lg:pb-0 lg:left-20 lg:w-80 lg:block overflow-y-auto border-r border-gray-200',
-          isOpen ? 'hidden' : 'block w-full left-0'
+          "fixed inset-y-0 pb-20 lg:pb-0 lg:left-20 lg:w-80 lg:block overflow-y-auto border-r border-gray-200",
+          isOpen ? "hidden" : "block w-full left-0",
         )}
       >
         <div className="px-5">

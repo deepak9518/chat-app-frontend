@@ -1,12 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { FullMessageType } from '@/app/types';
-import useConversation from '@/app/hooks/useConversation';
-import MessageBox from './MessageBox';
-import axios from 'axios';
-import { pusherClient } from '@/app/libs/pusher';
-import { find } from 'lodash';
+import { useState, useRef, useEffect } from "react";
+import { FullMessageType } from "@/app/types";
+import useConversation from "@/app/hooks/useConversation";
+import MessageBox from "./MessageBox";
+import { api } from "@/app/lib/api";
+import { getSocket } from "@/app/lib/socket";
 
 interface BodyProps {
   initialMessages: FullMessageType[];
@@ -19,40 +18,43 @@ const Body: React.FC<BodyProps> = ({ initialMessages }) => {
   const { conversationId } = useConversation();
 
   useEffect(() => {
-    axios.post(`/api/conversations/${conversationId}/seen`);
+    api.post(`/api/conversations/${conversationId}/seen`);
   }, [conversationId]);
 
   useEffect(() => {
-    pusherClient.subscribe(conversationId);
-    bottomRef?.current?.scrollIntoView();
+    const socket = getSocket();
+
+    if (!conversationId) return;
+
+    // join room
+    socket.emit("join", conversationId);
+
+    // mark seen
+    api.post(`/conversations/${conversationId}/seen`);
 
     const messageHandler = (message: FullMessageType) => {
-      axios.post(`/api/conversations/${conversationId}/seen`);
-
-      setMessages((prevMessages) => {
-        if (find(prevMessages, { id: message.id })) return prevMessages;
-        return [...prevMessages, message];
+      setMessages((prev) => {
+        if (prev.find((m) => m.id === message.id)) return prev;
+        return [...prev, message];
       });
 
+      api.post(`/conversations/${conversationId}/seen`);
       bottomRef?.current?.scrollIntoView();
     };
 
-    const updateMessageHandler = (newMessage: FullMessageType) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((message) => {
-          if (message.id === newMessage.id) return newMessage;
-          return message;
-        })
+    const updateHandler = (updatedMessage: FullMessageType) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m)),
       );
     };
 
-    pusherClient.bind('messages:new', messageHandler);
-    pusherClient.bind('message:update', updateMessageHandler);
+    socket.on("message:new", messageHandler);
+    socket.on("message:update", updateHandler);
 
     return () => {
-      pusherClient.unsubscribe(conversationId);
-      pusherClient.unbind('messages:new', messageHandler);
-      pusherClient.bind('messages:update', updateMessageHandler);
+      socket.emit("leave", conversationId);
+      socket.off("message:new", messageHandler);
+      socket.off("message:update", updateHandler);
     };
   }, [conversationId]);
 

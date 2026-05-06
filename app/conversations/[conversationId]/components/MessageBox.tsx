@@ -8,19 +8,19 @@ import { format } from 'date-fns';
 import Image from 'next/image';
 import { useState } from 'react';
 import ImageModal from './ImageModal';
+import { useAuth } from '@/app/context/AuthContext';
 
 interface MessageBoxProps {
   isLast: boolean;
   data: FullMessageType;
 }
-
 const MessageBox: React.FC<MessageBoxProps> = ({ isLast, data }) => {
-  const session = useSession();
+  const {user} = useAuth();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
-  const isOwn = session?.data?.user?.email === data.sender?.email;
+  const isOwn = user?.email === data.sender?.email;
   const seenList = (data.seen || [])
-    .filter((user) => user.email !== session?.data?.user?.email)
+    .filter((user) => user.email !== user?.email)
     .map((user) => user.name)
     .join(', ');
 

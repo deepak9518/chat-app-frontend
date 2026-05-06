@@ -1,37 +1,10 @@
-import prisma from '@/app/libs/prismadb';
-import getCurrentUser from './getCurrentUser';
+import { api } from "../lib/api";
 
 const getConversations = async () => {
   try {
-    const currentUser = await getCurrentUser();
-
-    if (!currentUser?.id) return [];
-
-    // Get all users except the current user
-    const conversations = await prisma.conversation.findMany({
-      orderBy: {
-        lastMessageAt: 'desc',
-      },
-      where: {
-        userIds: {
-          has: currentUser.id,
-        },
-      },
-      include: {
-        users: true,
-        messages: {
-          include: {
-            seen: true,
-            sender: true,
-          },
-        },
-      },
-    });
-
-    if (!conversations) return [];
-
-    return conversations;
-  } catch (error: any) {
+    const res = await api.get('/conversations');
+    return res.data;
+  } catch {
     return [];
   }
 };

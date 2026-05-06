@@ -1,21 +1,17 @@
-import { useSession } from 'next-auth/react';
 import { useMemo } from 'react';
 import { FullConversationType, User } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 const useOtherUser = (
   conversation: FullConversationType | { users: User[] }
 ) => {
-  const session = useSession();
+  const { user } = useAuth();
 
   const otherUser = useMemo(() => {
-    const currentUserEmail = session?.data?.user?.email;
+    if (!user) return null;
 
-    const otherUser = conversation.users.filter(
-      (user) => user.email !== currentUserEmail
-    );
-
-    return otherUser[0];
-  }, [session?.data?.user?.email, conversation.users]);
+    return conversation.users.find((u) => u.id !== user.userId);
+  }, [user, conversation.users]);
 
   return otherUser;
 };

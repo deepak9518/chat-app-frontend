@@ -1,36 +1,44 @@
-import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
-import { HiChat } from 'react-icons/hi';
-import { HiArrowLeftOnRectangle, HiUsers } from 'react-icons/hi2';
-import { signOut } from 'next-auth/react';
-import useConversation from './useConversation';
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
+import { HiChat } from "react-icons/hi";
+import { HiArrowLeftOnRectangle, HiUsers } from "react-icons/hi2";
+import useConversation from "./useConversation";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { api } from "../lib/api";
 
 const useRoutes = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const { conversationId } = useConversation();
+
+  const logout = async () => {
+    await api.post("/auth/logout");
+    router.push("/");
+  };
 
   const routes = useMemo(
     () => [
       {
-        label: 'Chat',
-        href: '/conversations',
+        label: "Chat",
+        href: "/conversations",
         icon: HiChat,
-        active: pathname === '/conversations' || !!conversationId,
+        active: pathname === "/conversations" || !!conversationId,
       },
       {
-        label: 'Users',
-        href: '/users',
+        label: "Users",
+        href: "/users",
         icon: HiUsers,
-        active: pathname === '/users',
+        active: pathname === "/users",
       },
       {
-        label: 'Logout',
-        href: '#',
-        onClick: () => signOut(),
+        label: "Logout",
+        href: "#",
+        onClick: logout,
         icon: HiArrowLeftOnRectangle,
       },
     ],
-    [pathname, conversationId]
+    [pathname, conversationId],
   );
 
   return routes;

@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form';
 import { CldUploadButton } from 'next-cloudinary';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import Modal from '../Modal';
 import Input from '../input/Input';
 import Image from 'next/image';
 import Button from '../Button';
 import { User } from '@/app/types';
+import { api } from '@/app/lib/api';
 
 interface SettingsModalProps {
   currentUser: User;
@@ -50,7 +50,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     setIsLoading(true);
 
-    axios
+    api
       .post('/api/profile', data)
       .then(() => {
         router.refresh();

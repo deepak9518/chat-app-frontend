@@ -1,43 +1,27 @@
+import { useEffect } from 'react';
 import useActiveList from './useActiveList';
-import { Channel, Members } from 'pusher-js';
-import { useState, useEffect } from 'react';
-import { pusherClient } from '.?./libs/pusher';
+import { useAuth } from '../context/AuthContext';
+import { getSocket } from '../lib/socket';
 
 const useActiveChannel = () => {
-  const { set, add, remove } = useActiveList();
-  const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
+  const { set } = useActiveList();
+  const { user } = useAuth();
 
   useEffect(() => {
-    let channel = activeChannel;
+    if (!user?.userId) return;
 
-    if (!channel) {
-      channel = pusherClient.subscribe('presence-messenger');
-      setActiveChannel(channel);
-    }
+    const socket = getSocket();
 
-    // channel.bind('pusher:subscription_succeeded', (members: Members) => {
-    //   const initialMembers: string[] = [];
+    socket.emit('online', user.userId);
 
-    //   members.each((member: Record<string, any>) =>
-    //     initialMembers.push(member.id)
-    //   );
-    //   set(initialMembers);
-    // });
-
-    // channel.bind('pusher:member_added', (member: Record<string, any>) => {
-    //   add(member.id);
-    // });
-
-    // channel.bind('pusher:member_removed', (member: Record<string, any>) => {
-    //   remove(member.id);
-    // });
+    socket.on('users:active', (users: string[]) => {
+      set(users);
+    });
 
     return () => {
-      if (activeChannel) {
-        pusherClient.unsubscribe('presence-messenger');
-        setActiveChannel(null);
-      }
+      socket.off('users:active');
     };
-  }, [activeChannel, add, remove, set]);
+  }, [user?.userId]);
 };
+
 export default useActiveChannel;
