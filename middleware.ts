@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { api } from "./app/lib/api";
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -9,13 +10,9 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    const res = await fetch("http://localhost:3000/auth/me", {
-      headers: {
-        cookie: `token=${token}`,
-      },
-    });
+    const res = await api.get("/auth/me");
 
-    if (!res.ok) {
+    if (!res) {
       throw new Error("Invalid");
     }
 
