@@ -35,15 +35,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   } = useForm<FieldValues>({
     defaultValues: {
       name: currentUser?.name || "",
-      image: currentUser?.avatar || "",
+      avatar: currentUser?.avatar || "",
     },
   });
 
-  const image = watch("image");
+  const image = watch("avatar");
 
-  const openFile = () => {
-    fileRef.current?.click();
-  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,7 +65,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         throw new Error("Upload failed");
       }
 
-      setValue("image", uploaded.url, {
+      setValue("avatar", uploaded.url, {
         shouldValidate: true,
       });
 
@@ -118,7 +115,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 required
               />
 
-              {/* 🔥 Upload Section */}
               <div>
                 <label className="block text-sm font-medium text-gray-900">
                   Photo

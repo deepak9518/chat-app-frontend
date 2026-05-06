@@ -17,6 +17,8 @@ export interface Room {
   name: string;
   type: 'personal' | 'group';
   members: User[];
+  invitedUsers?: User[];
+  invitedEmails?: string[];
   createdAt: Date;
   updatedAt: Date;
   unreadCount?: number;

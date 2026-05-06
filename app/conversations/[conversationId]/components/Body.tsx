@@ -16,7 +16,6 @@ const Body: React.FC<BodyProps> = ({ initialMessages }) => {
   const [messages, setMessages] = useState(initialMessages);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { conversationId } = useConversation();
-
   const socket = user?._id ? getSocket(user._id) : null;
 
   useEffect(() => {

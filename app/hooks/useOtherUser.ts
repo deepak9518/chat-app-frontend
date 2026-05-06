@@ -1,14 +1,18 @@
-import { useMemo } from 'react';
-import { Room, User } from '../types';
-import { useAuth } from '../context/AuthContext';
+import { useMemo } from "react";
+import { Room, User } from "../types";
+import { useAuth } from "../context/AuthContext";
 
 const useOtherUser = (room: Room | { users: User[]; members?: User[] }) => {
   const { user } = useAuth();
-  const members = 'members' in room ? room.members : room.users;
+  const members = "members" in room ? room.members : room.users;
+  const invitedUsers = room.members || [];
 
   const otherUser = useMemo(() => {
     if (!user) return null;
-    return members!.find((u: User) => u._id !== user._id);
+
+    return [...(members || []), ...(invitedUsers || [])]!.find(
+      (u: User) => u._id !== user._id,
+    );
   }, [user, members]);
 
   return otherUser;

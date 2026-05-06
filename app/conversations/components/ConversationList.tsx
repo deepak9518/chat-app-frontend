@@ -32,7 +32,7 @@ const ConversationList: React.FC<ConversationListProps> = ({
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOpenSettings, setIsOpen] = useState(false);
-console.log(initialRooms, users)
+
   const { conversationId, isOpen } = useConversation();
   const router = useRouter();
 
@@ -103,7 +103,6 @@ console.log(initialRooms, users)
           "block w-full lg:w-80",
         )}
       >
-        {/* 🔝 HEADER */}
         <div className="px-5 py-4 border-b flex items-center justify-between sticky top-0 bg-white z-10">
           <h2 className="text-xl font-semibold text-gray-800">Chats</h2>
 
@@ -115,7 +114,6 @@ console.log(initialRooms, users)
           </button>
         </div>
 
-        {/* 💬 CHAT LIST */}
         <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
           {rooms.length === 0 && (
             <p className="text-center text-gray-400 mt-10">
@@ -132,7 +130,6 @@ console.log(initialRooms, users)
           ))}
         </div>
 
-        {/* 👤 FOOTER */}
         <div className="px-4 py-3 border-t flex items-center justify-between bg-gray-50">
           <div
             onClick={() => setIsOpen(true)}

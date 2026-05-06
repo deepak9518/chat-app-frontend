@@ -10,7 +10,7 @@ const useActiveChannel = () => {
   useEffect(() => {
     if (!user?._id) return;
 
-    const socket = getSocket();
+    const socket = getSocket(user?._id);
 
     const handlePresenceUpdate = ({ userId, online }: { userId: string; online: boolean }) => {
       if (online) {

@@ -18,7 +18,6 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({
   conversation,
   selected,
 }) => {
-  const { user } = useAuth();
   const otherUser = useOtherUser(conversation);
   const router = useRouter();
 
@@ -34,7 +33,6 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({
     return lastMessage.content || 'Media message';
   }, [lastMessage]);
 
-  const hasSeen = false;
 
   return (
     <div
@@ -65,11 +63,7 @@ const ConversationBox: React.FC<ConversationBoxProps> = ({
           {lastMessageText}
         </p>
       </div>
-      {unreadCount > 0 && (
-        <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1">
-          {unreadCount}
-        </span>
-      )}
+
     </div>
   );
 };

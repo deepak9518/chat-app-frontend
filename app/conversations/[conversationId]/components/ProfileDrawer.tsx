@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import Avatar from '@/app/components/Avatar';
-import useOtherUser from '@/app/hooks/useOtherUser';
-import { Transition, Dialog } from '@headlessui/react';
-import { format } from 'date-fns';
-import { useMemo, Fragment, useState } from 'react';
-import { IoClose, IoTrash } from 'react-icons/io5';
-import ConfirmModal from './ConfirmModal';
-import AvatarGroup from '@/app/components/AvatarGroup';
-import useActiveList from '@/app/hooks/useActiveList';
-import { Room, User } from '@/app/types';
+import Avatar from "@/app/components/Avatar";
+import useOtherUser from "@/app/hooks/useOtherUser";
+import { Transition, Dialog } from "@headlessui/react";
+import { format } from "date-fns";
+import { useMemo, Fragment, useState } from "react";
+import { IoClose, IoTrash } from "react-icons/io5";
+import ConfirmModal from "./ConfirmModal";
+import AvatarGroup from "@/app/components/AvatarGroup";
+import useActiveList from "@/app/hooks/useActiveList";
+import { Room, User } from "@/app/types";
 
 interface ProfileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  data: Room;   // Room instead of FullMessageType
+  data: Room;
 }
 
 const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
@@ -27,26 +27,26 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   const { members } = useActiveList();
   const isActive = members.indexOf(otherUser?._id || "") !== -1;
 
-const joinedDate = useMemo(() => {
-  if (!data?.createdAt) return 'Unknown date';
-  try {
-    return format(new Date(data.createdAt), 'PP');
-  } catch {
-    return 'Invalid date';
-  }
-}, [data.createdAt]);
+  const joinedDate = useMemo(() => {
+    if (!data?.createdAt) return "Unknown date";
+    try {
+      return format(new Date(data.createdAt), "PP");
+    } catch {
+      return "Invalid date";
+    }
+  }, [data.createdAt]);
   const title = useMemo(() => {
-    if (data.type === 'group') {
+    if (data.type === "group") {
       return data.name;
     }
     return otherUser?.name || otherUser?.email;
   }, [data, otherUser]);
 
   const statusText = useMemo(() => {
-    if (data.type === 'group') {
+    if (data.type === "group") {
       return `${data.members.length} members`;
     }
-    return isActive ? 'Active' : 'Offline';
+    return isActive ? "Active" : "Offline";
   }, [data, isActive]);
 
   return (
@@ -100,7 +100,7 @@ const joinedDate = useMemo(() => {
                       <div className="relative mt-6 flex-1 px-4 sm:px-6">
                         <div className="flex flex-col items-center">
                           <div className="mb-2">
-                            {data.type === 'group' ? (
+                            {data.type === "group" ? (
                               <AvatarGroup users={data.members} />
                             ) : (
                               <Avatar user={otherUser!} />
@@ -108,7 +108,9 @@ const joinedDate = useMemo(() => {
                           </div>
 
                           <div>{title}</div>
-                          <div className="text-sm text-gray-500">{statusText}</div>
+                          <div className="text-sm text-gray-500">
+                            {statusText}
+                          </div>
 
                           <div className="flex gap-10 my-8">
                             <div
@@ -127,15 +129,17 @@ const joinedDate = useMemo(() => {
 
                           <div className="w-full pb-5 pt-5 sm:px-0 sm:pt-0">
                             <dl className="space-y-8 px-4 sm:space-y-6 sm:px-6">
-                              {data.type === 'group' ? (
+                              {data.type === "group" ? (
                                 <div>
                                   <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
                                     Members
                                   </dt>
                                   <dd className="mt-1 font-medium text-sm text-gray-900 sm:col-span-2">
                                     {data.members
-                                      .map((user: User) => user.name || user.email)
-                                      .join(', ')}
+                                      .map(
+                                        (user: User) => user.name || user.email,
+                                      )
+                                      .join(", ")}
                                   </dd>
                                 </div>
                               ) : (
@@ -152,10 +156,12 @@ const joinedDate = useMemo(() => {
                               <hr />
                               <div>
                                 <dt className="text-sm font-medium text-gray-500 sm:w-40 sm:flex-shrink-0">
-                                  {data.type === 'group' ? 'Created' : 'Joined'}
+                                  {data.type === "group" ? "Created" : "Joined"}
                                 </dt>
                                 <dd className="mt-1 font-medium text-sm text-gray-900 sm:col-span-2">
-                                  <time dateTime={joinedDate}>{joinedDate}</time>
+                                  <time dateTime={joinedDate}>
+                                    {joinedDate}
+                                  </time>
                                 </dd>
                               </div>
                             </dl>

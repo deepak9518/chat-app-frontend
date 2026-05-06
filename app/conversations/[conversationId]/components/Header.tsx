@@ -1,32 +1,65 @@
-'use client';
+"use client";
 
-import Avatar from '@/app/components/Avatar';
-import useOtherUser from '@/app/hooks/useOtherUser';
-import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { HiChevronLeft } from 'react-icons/hi';
-import { HiEllipsisHorizontal } from 'react-icons/hi2';
-import ProfileDrawer from './ProfileDrawer';
-import AvatarGroup from '@/app/components/AvatarGroup';
-import useActiveList from '@/app/hooks/useActiveList';
-import { Room, User } from '@/app/types';
+import Avatar from "@/app/components/Avatar";
+import useOtherUser from "@/app/hooks/useOtherUser";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { HiChevronLeft } from "react-icons/hi";
+import { HiEllipsisHorizontal } from "react-icons/hi2";
+import ProfileDrawer from "./ProfileDrawer";
+import AvatarGroup from "@/app/components/AvatarGroup";
+import useActiveList from "@/app/hooks/useActiveList";
+import { Room, User } from "@/app/types";
+import { getSocket } from "@/app/lib/socket";
+import { useAuth } from "@/app/context/AuthContext";
 
 interface HeaderProps {
   conversation: Room;
 }
 
 const Header: React.FC<HeaderProps> = ({ conversation }) => {
+
   const otherUser = useOtherUser(conversation);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { members } = useActiveList();
   const isActive = members.indexOf(otherUser?._id || "") !== -1;
-
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const { user } = useAuth();
   const statusText = useMemo(() => {
-    if (conversation.type === 'group') {
+    if (conversation.type === "group") {
       return `${conversation.members.length} members`;
     }
-    return isActive ? 'Active' : 'Offline';
+    return isActive ? "Active" : "Offline";
   }, [conversation, isActive]);
+  useEffect(() => {
+    if (!user?._id || !conversation._id) return;
+
+    const socket = getSocket(user._id);
+
+    const typingHandler = ({ userId, isTyping }: any) => {
+      setTypingUsers((prev) => {
+        if (isTyping) {
+          if (prev.includes(userId)) return prev;
+          return [...prev, userId];
+        } else {
+          return prev.filter((id) => id !== userId);
+        }
+      });
+    };
+
+    socket.on("userTyping", typingHandler);
+
+    return () => {
+      socket.off("userTyping", typingHandler);
+    };
+  }, [conversation._id]);
+  const invitedUser =  conversation.invitedUsers?.find((_) => _?._id !== user?._id);
+  const isTyping =
+    typingUsers &&
+    (otherUser ||invitedUser) &&
+    typingUsers.includes(
+      (otherUser || invitedUser)!?._id,
+    );
 
   return (
     <>
@@ -44,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ conversation }) => {
             <HiChevronLeft size={32} />
           </Link>
 
-          {conversation.type === 'group' ? (
+          {conversation.type === "group" ? (
             <AvatarGroup users={conversation.members} />
           ) : (
             <Avatar user={otherUser!} />
@@ -57,6 +90,13 @@ const Header: React.FC<HeaderProps> = ({ conversation }) => {
             <div className="text-sm font-light text-neutral-500">
               {statusText}
             </div>
+            <p className="text-xs text-gray-500">
+              {isTyping
+                ? "Typing..."
+                : otherUser?.online
+                  ? "Online"
+                  : `Last seen ${new Date(otherUser?.lastSeen!).toLocaleTimeString()}`}
+            </p>
           </div>
         </div>
 

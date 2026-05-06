@@ -4,7 +4,6 @@ import Image from 'next/image';
 export default function Home() {
   return (
     <main className="flex flex-col-reverse lg:flex-row min-h-screen">
-      {/* Left Column (CTA) */}
       <div
         className="lg:w-1/2 p-10"
         style={{ background: 'linear-gradient(45deg, #00BFFF, #0099CC)' }}
@@ -22,7 +21,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Right Column (Form) */}
       <div className="lg:w-1/2 bg-gray-100 p-10">
         <div className="sm:mx-auto flex flex-col justify-center h-full sm:w-full sm:max-w-md">
           <Image
@@ -37,7 +35,6 @@ export default function Home() {
             Join ChatFlow Chat Today!
           </h2>
 
-          {/* Auth Form */}
           <AuthForm />
         </div>
       </div>

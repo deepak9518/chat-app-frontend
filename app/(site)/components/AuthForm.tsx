@@ -49,7 +49,15 @@ const AuthForm = () => {
       }
 
       await refreshUser();
-      router.push("/conversations");
+      const redirect = new URLSearchParams(window.location.search).get(
+        "redirect",
+      );
+
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        router.push("/conversations");
+      }
     } catch (err: any) {
       const errorCode = err?.response?.status;
 
